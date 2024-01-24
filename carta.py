@@ -10,6 +10,7 @@ class Carta(Opcio):
   def __init__(self, plats: list[Plat]):
     # Ordenar els plats
     self.plats = sorted(plats, key=lambda plat: (-plat.veg, plat.nom))
+
     # Cridar constructor d'Opcio
     super().__init__("Escull un plat", {plat.nom: None for plat in self.plats})
 
