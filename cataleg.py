@@ -1,24 +1,29 @@
 from admin_llibre import AdminLlibre
 from formularis import ColeccioFormularis, Decisio, Nombre, Text, pausar, titol
 from id import ID
-from llibre import Llibre
+from llibre import Llibre, Estat
 from menu import Menu
 from typing import Callable
-from usuari import Usuari
-from usuaris import Usuaris
 from dataclasses import dataclass
 
 
 class Cataleg(Menu):
+	@staticmethod
+	def encapcalament():
+		print(f"{'ID':^4} {'TÍTOL':^35} {'AUTOR':^25} {'ANY':^4} {'ESTAT':^15}")
 
-	def __init__(self, llibres: list[Llibre], ids: ID, ref_usuaris):
+	def __init__(self, llibres: list[Llibre], ids: ID):
 		self.llibres = llibres
 		self.ids = ids
-		self.ref_usuaris = ref_usuaris
+
+		# Assignar IDs als llibres etiquetats com a perduts
+		for l in self.llibres:
+			if l.estat is Estat.Perdut:
+				l.assignar_id(ids)
 
 		super().__init__("Catàleg")
 
-	@Menu.menu()
+	@Menu.menu(descr=lambda self: str(self))
 	def __call__(self):
 		pass
 
@@ -28,13 +33,16 @@ class Cataleg(Menu):
 			print("No hi ha cap llibre.")
 		else:
 			self.llibres.sort(key=lambda l: l.id)
+			self.encapcalament()
 			for l in self:
-				print(l)
+				print(l.taula())
 
 		print()
-		self._demanar_id()
+		admin = self._admin_llibre()
+		if admin is not None:
+			admin()
 
-	@Menu.eina("Cercar llibre", 2)
+	@Menu.eina("Cercar llibre", 2, cond=lambda self: len(self) > 0)
 	def cercar_llibre(self):
 		q = Text("Cerca per títol o autor", buit=True)()
 		print()
@@ -43,21 +51,47 @@ class Cataleg(Menu):
 			print(f'Cercant "{q}"...')
 			print()
 
-			r: set[tuple[Llibre, int]] = {
-					(l, l.id)
-					for l in self
-					if q.lower() in l.titol.lower() or q.lower() in l.autor.lower()
-			}
 
-			if len(r) == 0:
+			# Obtenir els llibres que coincideixin amb la cerca
+			r_titol: list[Llibre] = [
+					l
+					for l in self
+					if q.lower() in l.titol.lower()
+				]
+			r_titol.sort(key=lambda t: t.id)
+
+			r_autor: list[Llibre] = [
+					l
+					for l in self
+					if q.lower() in l.autor.lower()
+				]
+			r_autor.sort(key=lambda t: t.id)
+
+			print("Cerca per títol:")
+			if len(r_titol) == 0:
 				print("No s'ha trobat cap llibre.")
 			else:
-				for l, id in r:
+				for l in r_titol:
+					print(l)
+			
+			print()
+	
+			print("Cerca per autor:")
+			if len(r_autor) == 0:
+				print("No s'ha trobat cap llibre.")
+			else:
+				for l in r_autor:
 					print(l)
 			print()
 
-			self._demanar_id(lambda n: n in [l[1] for l in r],
-											 "L'ID no és als resultats.")
+			if len(r_titol) == 0 and len(r_autor) == 0:
+				pausar()
+			else:
+				admin = self._admin_llibre(lambda n: n in [l.id for l in r_titol] or n in [l.id for l in r_autor],
+												 "L'ID no és als resultats.")
+				if admin is not None:
+					admin()
+
 
 	@Menu.eina("Afegir llibre", 3)
 	def afegir_llibre(self):
@@ -84,20 +118,34 @@ class Cataleg(Menu):
 		else:
 			self.ids.eliminar(llibre.id)
 
-	def _demanar_id(self,
+	@Menu.eina("Esborrar llibre", 4, cond=lambda self: len(self) > 0)
+	def esborrar_llibre(self):
+		if self._admin_llibre(cridar_met='esborrar') is not None:
+			self.esborrar_llibre()
+
+
+	# Demanar un ID a l'usuari per administrar el llibre corresponent
+	def _admin_llibre(self,
 									comprovar: Callable[[int], bool] = lambda n: True,
-									error_compr: str = "Valor invàlid."):
+									error_compr: str = "Valor invàlid.", cridar_met: str | None = None):
 		n = Nombre("Introdueix l'ID d'un llibre (deixa buit per acabar)",
+							 sufix=": #",
 							 comprovar1=lambda n: self.ids.existeix(n),
 							 error_compr1="L'ID no existeix.",
 							 comprovar2=comprovar,
 							 error_compr2=error_compr,
 							 buit=True)()
 		if n is not None:
-			AdminLlibre(n, self.llibres, self.ids, self.ref_usuaris)()
+			admin = AdminLlibre(n, self.llibres, self.ids)
+			
+			if cridar_met is not None:
+				getattr(admin, cridar_met)()
+
+			return admin
+		
 
 	def __repr__(self) -> str:
-		return str([str(l) for l in self.llibres])
+		return str([l.taula() for l in self.llibres])
 
 	def __len__(self):
 		return len(self.llibres)

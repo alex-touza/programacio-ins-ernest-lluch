@@ -38,10 +38,13 @@ class Colors:
 	entrada = Modificador(Fore.YELLOW)
 
 	gris = Modificador(Fore.LIGHTBLACK_EX)
-	
+	verd = Modificador(Fore.GREEN)
+	groc = Modificador(Fore.LIGHTYELLOW_EX)
+
 	error = Modificador(Fore.RED)
 	
 	reset = Modificador(Fore.RESET)
+
 
 
 class Estils:

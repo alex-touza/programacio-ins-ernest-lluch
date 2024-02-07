@@ -1,240 +1,247 @@
 from collections.abc import Callable
 from typing import Any, TypeVar
 from os import system, name
-from enum import Enum
 from abc import ABCMeta, abstractmethod
 
 from text import Colors, Estils
 
 T = TypeVar('T')
 
+
 class Formulari(metaclass=ABCMeta):
-	@abstractmethod
-	def __call__(self):
-		pass
+
+  @abstractmethod
+  def __call__(self):
+    pass
+
 
 def clear():
-	if name == 'nt':
-		system('cls')
-	else:
-		system('clear')
+  if name == 'nt':
+    system('cls')
+  else:
+    system('clear')
 
 
 def _input(missatge=""):
-	a = input(missatge + Colors.entrada)
-	Colors.reset()
-	return a
+  a = input(missatge + Colors.entrada)
+  Colors.reset()
+  return a
 
 
 def error(missatge):
-	print(Colors.error(missatge))
+  print(Colors.error(missatge))
 
 
 def pausar(missatge="Prem qualsevol tecla per continuar...", nova_linia=False):
-	if nova_linia:
-		print()
-	input(missatge + Colors.entrada)
-	Colors.reset()
+  if nova_linia:
+    print()
+  input(missatge + Colors.entrada)
+  Colors.reset()
 
 
 def titol(text: str, _clear=False):
-	if _clear:
-		clear()
-	print(Estils.brillant(text))
-	print("----------------")
+  if _clear:
+    clear()
+  print(Estils.brillant(text))
+  print("----------------")
 
 
 class Opcio(Formulari):
-	"""
+  """
 	Crea un formulari amb opcions, reutilitzable simplement cridant una instància.
 
 	"""
 
-	def __init__(self,
-							 missatge: str | None,
-							 opcions,
-							 args=None,
-							 descr: str | None = None,
-							 enrere: str | None = "Enrere",
-							 refrescar=True,
-							 mostrar=True,
-							 sep: str | None = "----------------"):
-		"""
+  def __init__(self,
+               missatge: str | None,
+               opcions,
+               args=None,
+               descr: str | None = None,
+               enrere: str | None = "Enrere",
+               refrescar=True,
+               mostrar=True,
+               sep: str | None = "----------------"):
+    """
 		- opcions: Diccionari de les opcions, on les claus són els noms de les opcions i els valors són les funcions
 		associades. Allò que retornin és ignorat. El tipus no està anotat per la seva complexitat.
 		- args: L'argument amb el qual es cridaran les funcions.
 		"""
-		self.missatge = missatge
-		self.descr = descr
-		self.opcions = opcions
-		self.args = args
-		self.enrere = enrere
-		self.refrescar = refrescar
-		self.mostrar = mostrar
-		self.sep = sep
+    self.missatge = missatge
+    self.descr = descr
+    self.opcions = opcions
+    self.args = args
+    self.enrere = enrere
+    self.refrescar = refrescar
+    self.mostrar = mostrar
+    self.sep = sep
 
-	# Retorna l'índex de l'opció escollida.
-	def __call__(self) -> int:
-		if self.refrescar:
-			clear()
+  # Retorna l'índex de l'opció escollida.
+  def __call__(self) -> int:
+    if self.refrescar:
+      clear()
 
-		if self.missatge is not None:
-			print(Estils.brillant(self.missatge))
+    if self.missatge is not None:
+      print(Estils.brillant(self.missatge))
 
-		if self.sep is not None:
-			print(self.sep)
+    if self.sep is not None:
+      print(self.sep)
 
-		if self.descr is not None:
-			print(self.descr)
+    if self.descr is not None:
+      print(self.descr)
 
-		Colors.opcions()
+    Colors.opcions()
 
-		if self.mostrar:
-			if self.enrere is not None:
-				print(f"0. {self.enrere}")
-			for i, opcio in enumerate(self.opcions.keys(), 1):
-				print(f"{i}. {opcio}")
+    if self.mostrar:
+      if self.enrere is not None:
+        print(f"0. {self.enrere}")
+      for i, opcio in enumerate(self.opcions.keys(), 1):
+        print(f"{i}. {opcio}")
 
-		Colors.reset()
+    Colors.reset()
 
-		op = _input()
-		if self.enrere is not None and (op == "" or op == "0"):
-			return 0
-		elif op.isdigit() and int(op) in range(1, len(self.opcions) + 1):
-			c = int(op)
-			# Executar funció associada a l'opció amb els arguments
-			v = list(self.opcions.values())[c - 1]
+    op = _input()
+    if self.enrere is not None and (op == "" or op == "0"):
+      return 0
+    elif op.isdigit() and int(op) in range(1, len(self.opcions) + 1):
+      c = int(op)
+      # Executar funció associada a l'opció amb els arguments
+      v = list(self.opcions.values())[c - 1]
 
-			if v is not None:
-				if self.args is None:
-					v()
-				else:
-					v(self.args)
+      if v is not None:
+        if self.args is None:
+          v()
+        else:
+          v(self.args)
 
-			return c
-		else:
-			print(Colors.error("Opció invàlida."))
-			# Tornar a escollir. Recursivitat, yay.
-			return self()
+      return c
+    else:
+      print(Colors.error("Opció invàlida."))
+      # Tornar a escollir. Recursivitat, yay.
+      return self()
 
 
 class Text(Formulari):
 
-	def __init__(self,
-							 missatge: str,
-							 comprovar: Callable[[str, int], bool] = (lambda t, le: True),
-							 sufix=": ",
-							 buit=False):
-		"""
+  def __init__(self,
+               missatge: str,
+               comprovar: Callable[[str, int], bool] = (lambda t, le: True),
+               sufix=": ",
+               buit=False):
+    """
 		- missatge: Títol del formulari.
 		- comprovar: Funció que ha de retornar un booleà indicant si el text introduït
 			és vàlid. El primer argument és el text i el segon la llargada.
 		- buit: Permet un valor buit com a resposta.
 		"""
-		self.missatge = missatge
-		self.sufix = sufix
-		self.comprovar = comprovar
-		self.buit = buit
+    self.missatge = missatge
+    self.sufix = sufix
+    self.comprovar = comprovar
+    self.buit = buit
 
-	def __call__(self) -> str:
-		text = _input(("" if self.missatge is None else
-									 (self.missatge + self.sufix)))
+  def __call__(self) -> str:
+    text = _input(("" if self.missatge is None else
+                   (self.missatge + self.sufix)))
 
-		valid = (text != ""
-						 and self.comprovar(text, len(text))) or (self.buit and text == "")
-		# Taula de veritat
-		# self.buit    text == ""   self.comprovar     *valid*
-		#     0           0              0                0
-		#     0           0              1                1
-		#     0           1              0                0
-		#     0           1              1                0
-		#     1           0              0                0
-		#     1           0              1                1
-		#     1           1              0                1
-		#     1           1              1                1
-		#
+    valid = (text != ""
+             and self.comprovar(text, len(text))) or (self.buit and text == "")
+    # Taula de veritat
+    # self.buit    text == ""   self.comprovar     *valid*
+    #     0           0              0                0
+    #     0           0              1                1
+    #     0           1              0                0
+    #     0           1              1                0
+    #     1           0              0                0
+    #     1           0              1                1
+    #     1           1              0                1
+    #     1           1              1                1
+    #
 
-		if not valid:
-			error("Text invàlid.")
-			return self()
-		return text
+    if not valid:
+      error("Text invàlid.")
+      return self()
+    return text
 
 
 class Nombre(Formulari):
 
-	def __init__(self,
-							 missatge: str | None = "",
-							 comprovar1: Callable[[int], bool] = lambda n: True,
-							 comprovar2: Callable[[int], bool] | None = None,
-							 error_compr1: str | None = "Valor invàlid.",							 error_compr2: str = "Valor invàlid.",
+  def __init__(self,
+               missatge: str | None = "",
+               comprovar1: Callable[[int], bool] = lambda n: True,
+               comprovar2: Callable[[int], bool] | None = None,
+               error_compr1: str | None = "Valor invàlid.",
+               error_compr2: str = "Valor invàlid.",
+               error_valor: str = "Valor invàlid.",
+               sufix=": ",
+               buit=False):
+    self.buit = buit
+    self.sufix = sufix
+    self.comprovar1 = comprovar1
+    self.comprovar2 = comprovar2
+    self.missatge = missatge
+    self.error_compr1 = error_compr1
+    self.error_compr2 = error_compr2
+    self.error_valor = error_valor
 
-							 error_valor: str = "Valor invàlid.",
-							 sufix=": ",
-							 buit=False):
-		self.buit = buit
-		self.sufix = sufix
-		self.comprovar1 = comprovar1
-		self.comprovar2 = comprovar2
-		self.missatge = missatge
-		self.error_compr1 = error_compr1
-		self.error_compr2 = error_compr2
-		self.error_valor = error_valor
+  def __call__(self) -> int | None:
+    n = _input(("" if self.missatge is None else (self.missatge + self.sufix)))
+    nint: None | int = None
 
-	def __call__(self) -> int | None:
-		n = _input(("" if self.missatge is None else (self.missatge + self.sufix)))
-		nint: None | int = None
+    if n == "" and self.buit:
+      return None
 
-		if n == "" and self.buit:
-			return None
+    try:
+      nint = int(n)
+    except Exception:
+      error(self.error_compr1)
+      return self()
 
-		try:
-			nint = int(n)
-		except Exception:
-			error(self.error_compr1)
-			return self()
+    if self.comprovar1(nint):
+      if self.comprovar2 is None or self.comprovar2(nint):
+        return nint
+      else:
+        error(self.error_compr2)
+    else:
+      error(self.error_compr1)
 
-		if self.comprovar1(nint):
-			if self.comprovar2 is None or self.comprovar2(nint):
-				return nint
-			else:
-				error(self.error_compr2)
-		else:
-			error(self.error_compr1)
-		
-		return self()
+    return self()
 
 
 class Decisio(Opcio):
 
-	def __init__(self,
-							 missatge: str | None = "",
-							 refrescar=True,
-							 si="Sí",
-							 no="No",
-							 sep: str | None = "----------------",
-							 descr: str | None = None):
-		super().__init__(missatge, {si: None}, None, descr, no, refrescar, sep=sep)
+  def __init__(self,
+               missatge: str | None = "",
+               refrescar=True,
+               si="Sí",
+               no="No",
+               sep: str | None = "----------------",
+               descr: str | None = None):
+    super().__init__(missatge, {si: None}, None, descr, no, refrescar, sep=sep)
 
-	def __call__(self) -> bool:
-		return super().__call__() == 1
+  def __call__(self) -> bool:
+    return super().__call__() == 1
+
 
 class ColeccioFormularis:
-	# Cal que tots els formularis tinguin la propietat "buit" com a True
-	# perquè funcioni el paràmetre "opcional"
-	def __init__(self, forms: dict[str, Formulari], opcional=False) -> None:
-		self.forms = forms
-		self.opcional = opcional
-		pass
+  # Cal que tots els formularis tinguin la propietat "buit" com a True
+  # perquè funcioni el paràmetre "opcional"
+  def __init__(self, forms: dict[str, Formulari], opcional=False) -> None:
+    self.forms = forms
+    self.opcional = opcional
+    pass
 
-	def __call__(self) -> None | dict[str, Any]:
-		resultats = {k: None for k in self.forms}
-		
-		for k, f in self.forms.items():
-			r = f()
-			
-			if r is None or r == "":
-				return None
-			else:
-				resultats[k] = r
-		
-		return resultats
+  def __call__(self) -> None | dict[str, Any]:
+    resultats = {k: None for k in self.forms}
+
+    for k, f in self.forms.items():
+      r = None
+      r = f()
+
+      while r is None and not self.opcional:
+        r = f()
+
+      if r is None or r == "":
+        return None
+      else:
+        resultats[k] = r
+
+    return resultats

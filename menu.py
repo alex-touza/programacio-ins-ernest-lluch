@@ -22,9 +22,10 @@ U = TypeVar('U')  # Tipus de la clau per mostrar les opcions. Pot ser un enum.
 
 
 # Millores respecte a Restaurant
-# Simplificada l'estructura de propietats de la funció wrapper.
-# Afegit paràmetre "func_clau" per cridar una funció directament, útil
+# - Simplificada l'estructura de propietats de la funció wrapper.
+# - Afegit paràmetre "func_clau" per cridar una funció directament, útil
 # 	per a submenús.
+# - Afegit suport per la crida externa de la funció decorada amb "eina"
 class Menu(Generic[T, U]):
 
 	# Si el títol és dinàmic, es pot passar una funció per obtenir-lo i
@@ -37,6 +38,13 @@ class Menu(Generic[T, U]):
 		self._titol = titol
 		self.titol_arg = arg
 		self.enrere = enrere
+
+		# Quan és True, l'administrador es tancarà encara que
+		# no s'esculli "Enrere"
+		self._sortir = False
+
+	def sortir(self):
+		self._sortir = True
 
 	@property
 	def titol(self) -> str:
@@ -113,20 +121,22 @@ class Menu(Generic[T, U]):
 				assert all(callable(item) for item in metodes)
 
 				# Obtenir el nom de l'opció i preparar la funció lambda que crida
-				# la funció corresponent a opció amb els arguments corresponents.
-				op = {m.nom: m.func for m in metodes}
+				# la funció corresponent a opció amb els arguments corresponents,
+				# sempre i quan la condició és nula o es compleix.
+				op = {m.nom: m for m in metodes if m.cond is None or m.cond(self)}
 
 				if Opcio(None,
 								 op,
-								 self,
-								 descr(self) if callable(descr) else descr,
+								 self, (descr(self) + '\n') if callable(descr) else
+								 ((descr + '\n') if descr is not None else None),
 								 refrescar=False,
 								 enrere=self.enrere,
 								 sep=None)() == 0:
 					return 0
 				else:
-					return wrapper(self)
-				
+					_sortir = self._sortir
+					self._sortir = False
+					return 0 if _sortir else wrapper(self)
 
 			return wrapper
 
@@ -137,7 +147,8 @@ class Menu(Generic[T, U]):
 					 pos: int | tuple[int, ...],
 					 clau: U | tuple[U] | None = None,
 					 descr: str | None = None,
-					 func_clau: str | None = None):
+					 func_clau: str | None = None,
+					cond: Callable[..., bool] | None = None):
 		"""
 		Decorador que determina que una funció és una eina que forma
 		part de l'administrador. Es mostrarà el títol amb el nom de
@@ -154,14 +165,18 @@ class Menu(Generic[T, U]):
 
 			# Creador de la funció
 			@wraps(func)
-			def wrapper(self, _nom, _descr, _func_clau):
-				if _func_clau is None:
-					titol(self.titol + " - " + _nom, True)
-					if _descr is not None:
-						print(_descr)
-					func(self)
-				else:
-					getattr(self, _func_clau)()
+			def wrapper(self):
+
+				def amb_params(self, _nom, _descr, _func_clau):
+					if _func_clau is None:
+						titol(self.titol + " - " + _nom, True)
+						if _descr is not None:
+							print(_descr)
+						func(self)
+					else:
+						getattr(self, _func_clau)()
+
+				return amb_params(self, nom, descr, func_clau)
 
 				# self.eines[clau][nom] = lambda self: f(self, nom, descr, func)
 
@@ -173,9 +188,10 @@ class Menu(Generic[T, U]):
 			# Afegir propietats a la pròpia funció per poder trobar-les
 			# més tard. Ignorar errors.
 			wrapper.clau = clau
-			wrapper.func = lambda self: wrapper(self, nom, descr, func_clau)
 			wrapper.nom = nom
 			wrapper.pos = pos
+			wrapper.cond = cond
+
 			return wrapper
 
 		return dec
