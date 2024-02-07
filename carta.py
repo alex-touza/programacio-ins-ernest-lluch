@@ -1,43 +1,70 @@
-from formularis import Opcio, Pausar, titol
+from administrador import Administrador
+from formularis import Opcio, Text, Decisio, Nombre, Pausar, clear, titol
 from plat import Plat
 
 
-class Carta(Opcio):
-  """
-  Carta és derivat d'Opcio per permetre la selecció de plats.
-  """
+class Carta(Administrador):
 
   def __init__(self, plats: list[Plat]):
-    # Ordenar els plats
-    self.plats = sorted(plats, key=lambda plat: (-plat.veg, plat.nom))
+    self.plats = plats
+    self.ordenar()
 
-    # Cridar constructor d'Opcio
-    super().__init__("Escull un plat", {plat.nom: None for plat in self.plats}, refrescar=False)
-
+    super().__init__("Carta")
+    
   def __str__(self) -> str:
-    return '\n'.join(plat.nom + (' (V) ' if plat.veg else ' ') +
-                     f'- {plat.preu/100:.2f}€' for plat in self.plats)
+    return '\n'.join(str(plat) for plat in self.plats)
 
   def __getitem__(self, key):
     return self.plats[key]
 
-  def __dir__(self):
-    return {plat.nom: None for plat in self.plats}
+  @Administrador.menu()
+  def __call__(self) -> None:
+    pass
 
-  def mostrar(self, pause=False):
-    titol("Carta")
-    print(self)
-    if pause:
-     Pausar()
+  def ordenar(self):
+    self.plats.sort(key=lambda plat: (-plat.veg, plat.nom))
 
+  def dict(self):
+    return {str(plat): None for plat in self.plats}
+
+
+  @Administrador.eina("Mostrar carta", 0)
+  def mostrar(self) -> None:
+    print(str(self))
+    Pausar()
+
+  
+  @Administrador.eina("Esborrar plats", 2)
   def esborrar(self):
-    i = Opcio("Esborrar plat", dir(self), enrere="Acabar")()
-    if i > 0:
-      i -= 1
-      # TODO: Comprovar que el plat no estigui en una comanda
-      del self.plats[i]
-      self.esborrar()
+    i = 1
+    while True:
+      i = Opcio(None, self.dict(), enrere="Acabar", sep="", refrescar=False)()
+      if i > 0:
+        i -= 1
+        # TODO: Comprovar que el plat no estigui en una comanda
+        del self.plats[i]
 
-  def afegir(self):
-    titol("Afegir plat")
+      else:
+        break
+      
+
+
+  @Administrador.eina("Afegir plat", 1)
+  def afegir(self):    
+    nom = Text("Nom del plat", lambda t, le: 0 < le <= 30, buit=True)()
+    if nom == "":
+      return
+      
+    preu = Nombre("Preu del plat en cèntims", lambda n: 0 < n <= 10000, buit=True)()
+    if preu is None:
+      return
     
+    veg = Text("Plat vegetarià (S/N)", lambda t, le: t.upper() in ["S", "N"], buit=True)() == "S"
+
+    plat = Plat(nom, preu, veg)
+    print()
+    print("S'afegirà el plat:")
+    print(plat)
+    if Decisio(None, refrescar=False, si="Confirmar", no="Enrere")():
+      self.plats.append(plat)
+      self.ordenar()

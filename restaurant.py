@@ -1,24 +1,27 @@
+from administrador import Administrador
 from carta import Carta
 from taula import Taula, Estat
 from formularis import Opcio, Pausar, titol, clear, Nombre, Decisio
 from collections import Counter
 
+from text import Colors
 
-class Restaurant(Opcio):
+
+class Restaurant(Administrador):
 	def __init__(self, carta: Carta, n_taules=3) -> None:
 		self.carta = carta
 		self.taules = [Taula(i, carta) for i in range(1, n_taules+1)]
-		self.n = n_taules
+
+		super().__init__("Taules")
 
 	def __call__(self):
-		super().__init__(str(self), {str(t): t for t in self.taules} | {
-			"Administrar taules": self._administrar_taules,
-			"Veure carta": lambda: self.carta.mostrar(True)
-		}, enrere=None)
-		return super().__call__()
+		Opcio(str(self), {str(t): t for t in self.taules} | {
+			"Administrar taules": self._admin_taules,
+			"Administrar carta": self.carta
+		}, enrere=None, args=None)()
 
 	def _comptar_taules(self):
-		return {"total": self.n} | dict(Counter([t.estat for t in self.taules]))
+		return {"total": int(self)} | dict(Counter([t.estat for t in self.taules]))
 
 	def veure_taules(self):
 		etiquetes = {
@@ -31,41 +34,35 @@ class Restaurant(Opcio):
 
 		print('\n    '.join([l + str(compte.get(e, 0)) for e, l in etiquetes.items()]))
 
-	def _administrar_taules(self):
-		titol("Administrador de taules", True)
+	@Administrador.menu()
+	def _admin_taules(self):
 		self.veure_taules()
-		op = Opcio(None, {"Afegir taules": lambda self: self._afegir(), "Treure una taula": lambda self: self._treure()}, args=self, sep=None, refrescar=False)()
-		if op != 0:
-			self._administrar_taules()
 
+	@Administrador.eina("Afegir taules", 1)
 	def _afegir(self):
-		titol("Afegir taules", True)
 		n = Nombre("Introdueix el nombre de taules", comprovar=lambda m: m >= 0, buit=True)()
 		if n is not None:
-			self.taules.extend([Taula(i, self.carta) for i in range(self.n, self.n + n)])
-			self.n += n
+			self.taules.extend([Taula(i + 1, self.carta) for i in range(int(self), int(self) + n)])
 
+	@Administrador.eina("Treure una taula", 2, descr="Es treurà la taula lliure amb l'identificador més alt.")
 	def _treure(self):
-		op = Decisio("Treure una taula", descr="Es treurà la taula lliure amb l'identificador més alt.", si="D'acord", no="Enrere")
+		if not Decisio(None, si="D'acord", no="Enrere", refrescar=False, sep=None)():
+			return
 
 		i = -1
-		for j, t in enumerate(self.taules):
+		for j, t in enumerate(self.taules[::-1]):
 			if t.estat is Estat.Lliure:
-				i = j
-
+				i = int(self) - j - 1
+				break
+				
 		if i == -1:
-			print("Error: Totes les taules estan ocupades.")
+			print(Colors.error("Error: No hi ha cap taula lliure."))
 			Pausar()
-
-
-
+		else:
+			self.taules.pop(i)
 
 	def __int__(self):
-		return self.n
+		return len(self.taules)
 
 	def __str__(self):
-		return f"Restaurant - {self.n} taules"
-
-	def __dir__(self):
-		return {str(t): t for t in self.taules}
-
+		return "Restaurant"

@@ -1,3 +1,18 @@
 {
-  "files": {}
+  "files": {
+    "restaurant.py": [
+      {
+        "id": "e82fe117-08e7-4c2b-9fe2-ee7d19c1e08d",
+        "line": 52,
+        "version": 1414,
+        "index": 1579
+      },
+      {
+        "id": "af1cd54a-c304-40f8-9db2-18a4fd06808b",
+        "line": 62,
+        "version": 1414,
+        "index": 1798
+      }
+    ]
+  }
 }

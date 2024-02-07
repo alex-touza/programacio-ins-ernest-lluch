@@ -1,12 +1,10 @@
-from collections.abc import Callable
-from typing import Any, Optional
 from carta import Carta
 from plat import Plat
-from taula import Taula
-from formularis import Opcio
 from restaurant import Restaurant
 
 from colorama import init
+
+from text import Colors
 
 init()
 
@@ -20,13 +18,17 @@ def main():
 		Plat("Arròs", 650, True),
 		Plat("Pizza", 1000, False),
 		Plat("Amanida", 500, True),
-		Plat("Bistec", 1250, False)
+		Plat("Bistec", 1250, False),
+		Plat("Feijoada", 2000, True)
 	])
 	restaurant = Restaurant(carta)
 
 	while True:
-		restaurant()
-
+		try:
+			restaurant()
+		except Exception as e:
+			Colors.error()
+			raise e
 
 if __name__ == "__main__":
 	main()

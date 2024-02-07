@@ -1,7 +1,8 @@
 from collections.abc import Callable
 from typing import TypeVar
 from os import system, name
-from colorama import Fore
+
+from text import Colors, Estils
 
 T = TypeVar('T')
 
@@ -13,10 +14,10 @@ def clear():
 		system('clear')
 
 
-def titol(text, _clear=False):
+def titol(text: str, _clear=False):
 	if _clear:
 		clear()
-	print(text)
+	print(Estils.brillant(text))
 	print("----------------")
 
 
@@ -33,6 +34,7 @@ class Opcio:
 	             descr: str | None = None,
 	             enrere: str | None = "Enrere",
 	             refrescar=True,
+               mostrar=True,
 	             sep: str | None="----------------"):
 		"""
     - opcions: Diccionari de les opcions, on les claus són els noms de les opcions i els valors són les funcions
@@ -45,6 +47,7 @@ class Opcio:
 		self.args = args
 		self.enrere = enrere
 		self.refrescar = refrescar
+		self.mostrar = mostrar
 		self.sep = sep
 
 	# Retorna l'índex de l'opció escollida.
@@ -53,7 +56,7 @@ class Opcio:
 			clear()
 
 		if self.missatge is not None:
-			print(self.missatge)
+			print(Estils.brillant(self.missatge))
 
 		if self.sep is not None:
 			print(self.sep)
@@ -61,16 +64,18 @@ class Opcio:
 		if self.descr is not None:
 			print(self.descr)
 
-		print(Fore.YELLOW, end="")
+		Colors.opcions()
 
-		if self.enrere is not None:
-			print(f"0. {self.enrere}")
+		if self.mostrar:
+			if self.enrere is not None:
+				print(f"0. {self.enrere}")
+			for i, opcio in enumerate(self.opcions.keys(), 1):
+				print(f"{i}. {opcio}")
+		
+		Colors.reset()
 
-		for i, opcio in enumerate(self.opcions.keys(), 1):
-			print(f"{i}. {opcio}")
-		print(Fore.RESET, end="")
-
-		op = input()
+		op = input(Colors.entrada)
+		Colors.reset()
 		if self.enrere is not None and (op == "" or op == "0"):
 			return 0
 		elif op.isdigit() and int(op) in range(1, len(self.opcions) + 1):
@@ -86,7 +91,7 @@ class Opcio:
 
 			return c
 		else:
-			print("Opció invàlida.")
+			print(Colors.error("Opció invàlida."))
 			# Tornar a escollir. Recursivitat, yay.
 			return self()
 
@@ -110,9 +115,10 @@ class Text:
 		self.buit = buit
 
 	def __call__(self) -> str:
-		text = input(self.missatge + self.sufix)
+		text = input(("" if self.missatge is None else (self.missatge + self.sufix)) + Colors.entrada)
+		Colors.reset()
 
-		valid = (text != "" and self.comprovar) or (self.buit and text == "")
+		valid = (text != "" and self.comprovar(text, len(text))) or (self.buit and text == "")
 		# Taula de veritat
 		# self.buit    text == ""   self.comprovar     *valid*
 		#     0           0              0                0
@@ -126,21 +132,21 @@ class Text:
 		#
 
 		if not valid:
-			print("Text invàlid.")
+			print(Colors.error("Text invàlid."))
 			return self()
 		return text
 
 
 class Nombre:
-	def __init__(self, missatge: str="", comprovar: Callable[[int], bool] = lambda n: True, sufix=": ", buit=False):
+	def __init__(self, missatge: str | None = "", comprovar: Callable[[int], bool] = lambda n: True, sufix=": ", buit=False):
 		self.buit = buit
 		self.sufix = sufix
 		self.comprovar = comprovar
 		self.missatge = missatge
 
 	def __call__(self) -> int | None:
-		n = input(self.missatge + self.sufix)
-
+		n = input(("" if self.missatge is None else (self.missatge + self.sufix)) + Colors.entrada)
+		Colors.reset()
 		nint: None | int = None
 
 		if n == "" and self.buit:
@@ -154,28 +160,30 @@ class Nombre:
 		if nint is not None and self.comprovar(nint):
 			return nint
 		else:
-			print("Valor invàlid.")
+			print(Colors.error("Valor invàlid."))
 			return self()
 
 
+# Una mica estúpid utilitzar una classe així...
 class Pausar:
 	def __init__(self):
 		self.__call__()
 
 	def __call__(self):
-		input("\nPrem qualsevol tecla per continuar...")
+		input("\nPrem qualsevol tecla per continuar..." + Colors.entrada)
+		Colors.reset()
 
 
 class Decisio(Opcio):
 
 	def __init__(self,
-	             missatge: str,
+	             missatge: str | None = "",
 	             refrescar=True,
 	             si="Sí",
 	             no="No",
-	             sep="----------------",
+	             sep: str | None="----------------",
 	             descr: str | None = None):
-		super().__init__(missatge, {t: None for t in [si, no]}, None, descr, None, refrescar, sep)
+		super().__init__(missatge, {si: None}, None, descr, no, refrescar, sep=sep)
 
 	def __call__(self) -> bool:
-		return super()() == 1
+		return super().__call__() == 1
