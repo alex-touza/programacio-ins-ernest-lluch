@@ -3,8 +3,9 @@ from id import ID
 
 class Genere(Enum):
 	Drama = "drama"
+	Romanc = "romanç"
 	CienciaFiccio = "ciència-ficció"
-	Acció = "acció"
+	Accio = "acció"
 	Aventura = "aventura"
 	Terror = "terror"
 	Comedia = "comèdia"
@@ -28,4 +29,11 @@ class Pelicula:
 			self.id = obtenir_id(id)
 
 	def __str__(self) -> str:
-		return f"#{'??' if self.id == -1 else self.id} {self.titol} ({self.any} - {self.genere.value}) de {self.director}"
+		return f" {self.titol} ({self.any} - {self.genere.value}) de {self.director}"
+
+	def amb_id(self) -> str:
+		return "#" + ("??" if self.id == -1 else str(self.id)) + str(self)
+
+	def taula(self):
+		genere = self.genere.value.capitalize()
+		return f"#{self.id if self.id is not None else '??':<3} {self.titol:<25} {self.director:<30} {genere:<16} {self.any:^4}"

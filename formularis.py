@@ -7,6 +7,8 @@ from text import Colors, Estils
 
 T = TypeVar('T')
 
+def quant(n: int, singular: str, plural: str) -> str:
+	return f"Cap {singular}" if n == 0 else (f"1 {singular}" if n == 1 else f"{n} {plural}")
 
 class Formulari(metaclass=ABCMeta):
 
@@ -115,7 +117,7 @@ class Opcio(Formulari):
 
 			return c
 		else:
-			print(Colors.error("Opció invàlida."))
+			print(Colors.error("Opció invàlida.\n"))
 			# Tornar a escollir. Recursivitat, yay.
 			return self()
 
@@ -126,21 +128,24 @@ class Text(Formulari):
 							 missatge: str,
 							 comprovar: Callable[[str, int], bool] = (lambda t, le: True),
 							 sufix=": ",
-							 buit=False):
+							 buit=False, default: str | None=""):
 		"""
 		- missatge: Títol del formulari.
 		- comprovar: Funció que ha de retornar un booleà indicant si el text introduït
 			és vàlid. El primer argument és el text i el segon la llargada.
 		- buit: Permet un valor buit com a resposta.
+		- default: Valor per defecte si el valor sense espais és buit. Requereix buit=True
 		"""
 		self.missatge = missatge
 		self.sufix = sufix
 		self.comprovar = comprovar
 		self.buit = buit
+		self.default = default
 
-	def __call__(self) -> str:
+	def __call__(self) -> str | None:
 		text = _input(("" if self.missatge is None else
-									 (self.missatge + self.sufix)))
+									 (self.missatge + self.sufix))).strip()
+
 
 		valid = (text != ""
 						 and self.comprovar(text, len(text))) or (self.buit and text == "")
@@ -159,7 +164,7 @@ class Text(Formulari):
 		if not valid:
 			error("Text invàlid.")
 			return self()
-		return text
+		return self.default if text == "" else text
 
 
 class Nombre(Formulari):
@@ -168,8 +173,8 @@ class Nombre(Formulari):
 							 missatge: str | None = "",
 							 comprovar1: Callable[[int], bool] = lambda n: True,
 							 comprovar2: Callable[[int], bool] | None = None,
-							 error_compr1: str | None = "Valor invàlid.",
-							 error_compr2: str = "Valor invàlid.",
+							 error_compr1: str = "Valor invàlid.",
+							 error_compr2: str | None = "Valor invàlid.",
 							 error_valor: str = "Valor invàlid.",
 							 sufix=": ",
 							 buit=False):
@@ -221,7 +226,7 @@ class Decisio(Opcio):
 		return super().__call__() == 1
 
 
-class ColeccioFormularis:
+class GrupFormularis:
 	# Cal que tots els formularis tinguin la propietat "buit" com a True
 	# perquè funcioni el paràmetre "opcional"
 	def __init__(self, forms: dict[str, Formulari], opcional=False) -> None:
