@@ -79,14 +79,17 @@ class AdminColeccio(Menu):
 
 		i = 0
 
-		while i is not None and len(self.coleccio) > 0:
+		while len(self.coleccio) > 0:
 			i = form()
+
+			if i is None:
+				break
+
 			p = self.coleccio.llista.pop(i - 1)
 
 			print("S'ha eliminat la pel·lícula:")
 			print(p)
 			print()
-
-		if len(self.coleccio) > 0:
+		else:
 			print("La col·lecció ja és buida.")
 			pausar(nova_linia=True)
