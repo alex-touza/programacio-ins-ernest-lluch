@@ -4,12 +4,13 @@ from id import ID
 from menu import Menu
 from pelicula import Pelicula, Genere
 from unidecode import unidecode
+from text import Estils
 
 
 class Cataleg(Menu):
 	@staticmethod
 	def encapcalament():
-		print(f"{'ID':^4} {'TÍTOL':^25} {'DIRECTOR':^30} {'GÈNERE':^16} {'ANY':^4}")
+		print(Estils.brillant(f"{'ID':^4} {'TÍTOL':^36} {'DIRECTOR':^32} {'GÈNERE':^16} {'ANY':^4}"))
 
 	def __init__(self, pelicules: list[Pelicula], ids: ID) -> None:
 		self.pelicules = pelicules
@@ -25,7 +26,7 @@ class Cataleg(Menu):
 	def __call__(self):
 		pass
 
-	def _mostrar(self):
+	def mostrar(self):
 		if len(self) == 0:
 			print("Catàleg buit")
 		else:
@@ -37,7 +38,7 @@ class Cataleg(Menu):
 
 	@Menu.eina("Mostrar catàleg", 1)
 	def mostrar_cataleg(self):
-		self._mostrar()
+		self.mostrar()
 		pausar(nova_linia=True)
 		
 	@Menu.eina("Afegir pel·lícula", 2)
@@ -80,40 +81,29 @@ class Cataleg(Menu):
 
 	@Menu.eina("Eliminar pel·lícula", 3, cond=lambda self: len(self) > 0)
 	def eliminar_pelicula(self):
-		self._mostrar()
+		self.mostrar()
 		print()
-		
-		n = Nombre("Introdueix l'ID d'una pel·lícula",
-							 sufix=": #",
-							 comprovar1=lambda n: self.ids.existeix(n),
-							 error_compr1="L'ID no existeix.",
-							 buit=True)()
 
 		p = self._obtenir_pelicula()
 		
-		if p is not None:
-			# Obtenir pel·lícula
-			p = None
-			for l in self:
-				if l.id == n:
-					p = l
-					break
+		if p is None:
+			return
 
-			assert p is not None
-			
+		assert p is not None
+
+		print()
+		print("S'eliminarà la pel·lícula:")
+		if Decisio(None, False, "Eliminar", "Enrere", None,
+			 str(p))():
+			self.ids.eliminar(p.id)
+			self.pelicules.remove(p)
+
+			print(f"Pel·lícula amb ID #{p.id} esborrada.")
 			print()
-			print("S'eliminarà la pel·lícula:")
-			if Decisio(None, False, "Eliminar", "Enrere", None,
-				 str(p))():
-				self.ids.eliminar(n)
-				self.pelicules.remove(p)
-				
-				print(f"Pel·lícula amb ID #{n} esborrada.")
-				print()
-				pausar()
+			pausar()
 
 	def _obtenir_pelicula(self):
-		n = Nombre("Introdueix l'ID d'una pel·lícula",
+		n = Nombre("ID de la pel·lícula",
 			 sufix=": #",
 			 comprovar1=lambda n: self.ids.existeix(n),
 			 error_compr1="L'ID no existeix.",
@@ -130,21 +120,7 @@ class Cataleg(Menu):
 
 			return p
 		return None
-				
-	@Menu.eina("Seleccionar pel·lícula", 0, amagada=False)			
-	def seleccionar_pelicula(self, coleccio: Coleccio):
-		print(coleccio)
-		self._mostrar()
 
-		p = 0
-
-		while p is not None:
-			p = self._obtenir_pelicula()
-
-			if p is not None:
-				coleccio.llista.append(p)
-
-	
 	def __iter__(self):
 		return iter(self.pelicules)
 

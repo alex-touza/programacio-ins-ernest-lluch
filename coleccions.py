@@ -49,6 +49,7 @@ class Coleccions(Menu):
 
 		form = Nombre("ID d'una col·lecció",
 									lambda n: self.ids.existeix(n) and n not in col_ids,
+									sufix=": #",
 									buit=True)
 
 		for i in range(2):

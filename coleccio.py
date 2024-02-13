@@ -15,24 +15,32 @@ class Coleccio:
   def afegir(self, pelicula: Pelicula) -> None:
     self.llista.append(pelicula)
 
-  def eliminar(self, id: int) -> None:
+  def eliminar(self, id: int) -> Pelicula:
     for p in self:
       if p.id == id:
         self.llista.remove(p)
         self.ids.eliminar(id)
-        return
+        return p
 
     raise ValueError(f"No s'ha trobat la pel·lícula amb ID {id}")
+
+  def inclou(self, pelicula: Pelicula | int):
+    for p in self:
+      if ((p is pelicula) if isinstance(pelicula, Pelicula) else (p.id == pelicula)):
+        return True
+
+    return False
+
 
   def __add__(self, other):
     return Coleccio(self.nom + " / " + other.nom, self.descr,
                     self.ids(), self.ids, list(set(self.llista + other.llista)))
 
-  def _quant(self) -> str:
+  def quant(self) -> str:
     return quant(len(self.llista), 'pel·lícula', 'películ·les')
     
   def __str__(self) -> str:
-    return f"{self.nom} ({self._quant()})"
+    return f"{self.nom} ({self.quant()})"
 
   def __len__(self) -> int:
     return len(self.llista)

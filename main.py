@@ -3,6 +3,9 @@ from id import ID
 from menu import Menu
 from pelicula import Pelicula, Genere
 from coleccions import Coleccions
+from colorama import init
+
+init()
 
 class Videoclub(Menu):
 	def __init__(self, cataleg: Cataleg):
@@ -16,7 +19,7 @@ class Videoclub(Menu):
 		pass
 	
 	@Menu.eina("Catàleg", 1, func_clau='cataleg')
-	def admin_catàleg(self):
+	def admin_cataleg(self):
 		pass
 	
 	@Menu.eina("Col·leccions", 2, func_clau='coleccions')
@@ -40,14 +43,15 @@ cataleg = Cataleg([
 	Pelicula("Back to the Future", "Robert Zemeckis", Genere.CienciaFiccio, 1985),
 	Pelicula("As Above, So Below", "John Erick Dowdle", Genere.Terror, 2014),
 	Pelicula("Cloud Atlas", "The Wachowskis", Genere.Drama, 2012),
+	Pelicula("Matrix", "The Wachowskis", Genere.CienciaFiccio, 1999),
 	Pelicula("Contact", "Robert Zemeckis", Genere.CienciaFiccio, 1997),
 	Pelicula("Grease", "Randal Kleiser", Genere.Romanc, 1978),
 	Pelicula("The Garden of Woods", "Makoto Shinkai", Genere.Romanc, 2013),
-	Pelicula("Harry Potter and the Sorcerer's Stone", "Chris Columbus", Genere.Fantasia, 2001),
 	Pelicula("Miracolo a Milano", "Vittorio De Sica", Genere.Fantasia, 1951),
 	Pelicula("The Odyssey", "Andrei Konchalovsky", Genere.Aventura, 1997),
 	Pelicula("Spy Kids", "Robert Rodriguez", Genere.Aventura, 2001),
-	Pelicula("The Physician", "Philipp Stölzl", Genere.Aventura, 2013)
+	Pelicula("The Physician", "Philipp Stölzl", Genere.Aventura, 2013),
+	Pelicula("A.I. Artificial Intelligence", "Steven Spielberg", Genere.CienciaFiccio, 2001),
 ], pelicules_id)
 
 videoclub = Videoclub(cataleg)

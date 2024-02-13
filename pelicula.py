@@ -29,11 +29,11 @@ class Pelicula:
 			self.id = obtenir_id(id)
 
 	def __str__(self) -> str:
-		return f" {self.titol} ({self.any} - {self.genere.value}) de {self.director}"
+		return f"{self.titol} ({self.any} - {self.genere.value}) de {self.director}"
 
 	def amb_id(self) -> str:
 		return "#" + ("??" if self.id == -1 else str(self.id)) + str(self)
 
 	def taula(self):
 		genere = self.genere.value.capitalize()
-		return f"#{self.id if self.id is not None else '??':<3} {self.titol:<25} {self.director:<30} {genere:<16} {self.any:^4}"
+		return f"#{self.id if self.id is not None else '??':<3} {self.titol:<36} {self.director:<32} {genere:<16} {self.any:^4}"
