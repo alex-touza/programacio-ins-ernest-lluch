@@ -10,7 +10,7 @@ from text import Estils
 class Cataleg(Menu):
 	@staticmethod
 	def encapcalament():
-		print(Estils.brillant(f"{'ID':^4} {'TÍTOL':^36} {'DIRECTOR':^32} {'GÈNERE':^16} {'ANY':^4}"))
+		print(Estils.brillant(f"{'ID':^4} {'TÍTOL':^42} {'DIRECTOR':^32} {'GÈNERE':^16} {'ANY':^4}"))
 
 	def __init__(self, pelicules: list[Pelicula], ids: ID) -> None:
 		self.pelicules = pelicules
@@ -53,8 +53,8 @@ class Cataleg(Menu):
 		dades = GrupFormularis({
 			"titol": Text("Títol", buit=True),
 			"director": Text("Director", buit=True),
-			"genere": Text("Gènere", lambda s, le: unidecode(s.lower()) in generes),
-			"any": Nombre("Any", lambda n: n < 2025, buit=True)
+			"genere": Text("Gènere", lambda s, le: unidecode(s.lower()) in generes, buit=True),
+			"any": Nombre("Any", lambda n: 1900 < n < 2025, buit=True)
 		}, opcional=True)()
 
 		if dades is None:

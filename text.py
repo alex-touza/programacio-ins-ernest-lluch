@@ -4,8 +4,9 @@ from colorama import Fore, Style
 
 class Modificador:
 
-	def __init__(self, c: str):
+	def __init__(self, c: str, r: str = Style.RESET_ALL):
 		self.c = c
+		self.r = r
 
 	def __str__(self):
 		return self.c
@@ -23,7 +24,7 @@ class Modificador:
 			print(self.c, end="")
 			return
 		else:
-			return self.c + str(text) + Style.RESET_ALL
+			return self.c + str(text) + self.r
 
 	# Afegim funcions màgiques de suma perquè actuïn com a strings
 	def __add__(self, other):
@@ -48,8 +49,8 @@ class Colors:
 
 
 class Estils:
-	brillant = Modificador(Style.BRIGHT)
-	fosc = Modificador(Style.DIM)
+	brillant = Modificador(Style.BRIGHT, Style.NORMAL)
+	fosc = Modificador(Style.DIM, Style.NORMAL)
 
 
 def taula(dades: dict[str, Any]):

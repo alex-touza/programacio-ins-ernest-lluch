@@ -1,6 +1,7 @@
 from formularis import quant
 from id import ID
 from pelicula import Pelicula
+from text import Estils
 
 
 class Coleccio:
@@ -40,7 +41,7 @@ class Coleccio:
     return quant(len(self.llista), 'pel·lícula', 'películ·les')
     
   def __str__(self) -> str:
-    return f"{self.nom} ({self.quant()})"
+    return f"{Estils.brillant(self.nom)} ({self.quant()})"
 
   def __len__(self) -> int:
     return len(self.llista)

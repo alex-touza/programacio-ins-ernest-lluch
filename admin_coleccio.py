@@ -32,13 +32,7 @@ class AdminColeccio(Menu):
 
 	@Menu.eina("Mostrar col·lecció", 1, cond=lambda self: len(self.coleccio) > 0)
 	def mostrar_coleccio(self):
-		assert self.coleccio is not None
-
-		print(self.coleccio.quant())
-		print()
-
-		for i, p in enumerate(self.coleccio, 1):
-			print(f"{i}. {p}")
+		self.mostrar()
 
 		pausar(nova_linia=True)
 
@@ -49,33 +43,43 @@ class AdminColeccio(Menu):
 		self.ref_cataleg.mostrar()
 		print()
 
-		id = Nombre("ID d'una pel·lícula", lambda n: self.ref_cataleg.ids.existeix(n),
-		            lambda n: not self.coleccio.inclou(n), "L'ID no existeix.",
-		            "La pel·lícula ja està a la col·lecció.", sufix=": #",
-		            buit=True)()
+		id = 0
 
-		if id is None:
-			return
+		while id is not None:
+	
+			id = Nombre("ID d'una pel·lícula", lambda n: self.ref_cataleg.ids.existeix(n),
+			            lambda n: not self.coleccio.inclou(n), "L'ID no existeix.",
+			            "La pel·lícula ja està a la col·lecció.", sufix=": #",
+			            buit=True)()
+	
+			if id is None:
+				return
+	
+			pelicula = None
+			for p in self.ref_cataleg:
+				if id == p.id:
+					pelicula = p
+					break
+			
+			assert pelicula is not None
 
-		pelicula = None
-		for p in self.ref_cataleg:
-			if id == p.id:
-				pelicula = p
-				break
 
-		assert pelicula is not None
-
-		self.coleccio.afegir(pelicula)
+			print()
+			print("S'ha afegit la pel·lícula:")
+			print(pelicula)
+			print()
+	
+			self.coleccio.afegir(pelicula)
 
 	@Menu.eina("Treure pel·lícula", 3, cond=lambda self: len(self.coleccio) > 0)
 	def treure_pelicula(self):
 		assert self.coleccio is not None
 
-		self.ref_cataleg.mostrar()
+		self.mostrar()
 		print()
 
 		print("Deixa buit per acabar.")
-		form = Nombre("Índex d'una pel·lícula", lambda n: 1 < n <= len(self.coleccio), buit=True)
+		form = Nombre("Índex d'una pel·lícula", lambda n: 1 <= n <= len(self.coleccio), buit=True)
 
 		i = 0
 
@@ -87,9 +91,21 @@ class AdminColeccio(Menu):
 
 			p = self.coleccio.llista.pop(i - 1)
 
+			print()
 			print("S'ha eliminat la pel·lícula:")
 			print(p)
+			print()
+			self.mostrar()
 			print()
 		else:
 			print("La col·lecció ja és buida.")
 			pausar(nova_linia=True)
+
+	def mostrar(self):
+		assert self.coleccio is not None
+		
+		print(self.coleccio.quant())
+		print()
+
+		for i, p in enumerate(self.coleccio, 1):
+			print(f"{i}. {p}")

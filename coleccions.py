@@ -36,7 +36,7 @@ class Coleccions(Menu):
 		if nom == "":
 			return
 
-		descr = Text("Descripció", buit=True, default=None)()
+		descr = Text("Descripció (opcional)", buit=True, default=None)()
 
 		print()
 		c = Coleccio(nom, descr, None, self.ids)
