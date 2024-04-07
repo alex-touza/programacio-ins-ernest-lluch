@@ -2,7 +2,6 @@ from collections.abc import Callable
 from typing import Generic, TypeVar
 from formularis import Opcio, titol
 from functools import wraps
-from enum import Enum
 
 T = TypeVar('T')  # Argument per cridar la funció per obtenir el titol
 U = TypeVar('U')  # Tipus de la clau per mostrar les opcions. Pot ser un enum.
@@ -116,6 +115,7 @@ class Menu(Generic[T, U]):
             if getattr(m, 'dinamic', False)
         ]
 
+        # Cridar les funcions per obtenir les eines dinàmiques
         for e in metodes:
           op.update(e(self))
 

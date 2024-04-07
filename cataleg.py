@@ -6,11 +6,10 @@ from pelicula import Pelicula, Genere
 from unidecode import unidecode
 from text import Estils
 
-
 class Cataleg(Menu):
 	@staticmethod
 	def encapcalament():
-		print(Estils.brillant(f"{'ID':^4} {'TÍTOL':^42} {'DIRECTOR':^32} {'GÈNERE':^16} {'ANY':^4}"))
+		print(Estils.brillant(f"{'ID':^4} {'TÍTOL':^40} {'DIRECTOR':^32} {'GÈNERE':^24} {'ANY':^4}"))
 
 	def __init__(self, pelicules: list[Pelicula], ids: ID) -> None:
 		self.pelicules = pelicules

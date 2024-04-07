@@ -37,4 +37,5 @@ class Pelicula:
 
 	def taula(self):
 		genere = self.genere.value.capitalize()
-		return f"#{self.id if self.id is not None else '??':<3} {Estils.brillant(self.titol):<42} {self.director:<32} {genere:<16} {self.any:^4}"
+		titol = f"{self.titol:<40}"
+		return f"{'#' + str(self.id if self.id is not None else '??'):<4} {Estils.brillant(titol)} {self.director:<32} {genere:<24} {self.any:^4}"

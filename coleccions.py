@@ -69,7 +69,13 @@ class Coleccions(Menu):
 		for c in col:
 			print(c)
 
-		self._confirmar_creacio(col[0] + col[1], "", "=> ")
+		comb = col[0] + col[1]
+
+		rep = len(col[0]) + len(col[1]) - len(comb)
+		if rep > 0:
+			print('\t - ' + quant(rep, "pel·lícula repetida", "pel·lícules repetides"))
+			
+		self._confirmar_creacio(comb, "", "=> ")
 
 	def _confirmar_creacio(self,
 												 c,

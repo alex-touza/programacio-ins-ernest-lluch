@@ -5,7 +5,10 @@ from pelicula import Pelicula, Genere
 from coleccions import Coleccions
 from colorama import init
 
+from text import Estils
+
 init()
+
 
 class Videoclub(Menu):
 	def __init__(self, cataleg: Cataleg):
