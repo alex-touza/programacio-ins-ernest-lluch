@@ -15,7 +15,6 @@ class Estat(Enum):
 
 class Taula(Administrador):
 
-	# Sense type hint per evitar error d'importació circular.
 	def __init__(self, id: int, _carta: Carta) -> None:
 		self.id = id
 		self.plats: list[Plat] = []
