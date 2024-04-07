@@ -1,6 +1,6 @@
 from cataleg import Cataleg
 from coleccio import Coleccio
-from formularis import Nombre, pausar
+from formularis import Nombre, Decisio, pausar
 from id import ID
 from menu import Menu
 
@@ -45,8 +45,9 @@ class AdminColeccio(Menu):
 
 		id = 0
 
+		print("Deixa buit per acabar.")
+
 		while id is not None:
-	
 			id = Nombre("ID d'una pel·lícula", lambda n: self.ref_cataleg.ids.existeix(n),
 			            lambda n: not self.coleccio.inclou(n), "L'ID no existeix.",
 			            "La pel·lícula ja està a la col·lecció.", sufix=": #",
@@ -68,6 +69,7 @@ class AdminColeccio(Menu):
 			print("S'ha afegit la pel·lícula:")
 			print(pelicula)
 			print()
+			print("----------------")
 	
 			self.coleccio.afegir(pelicula)
 
@@ -95,11 +97,24 @@ class AdminColeccio(Menu):
 			print("S'ha eliminat la pel·lícula:")
 			print(p)
 			print()
+			print("----------------")
 			self.mostrar()
 			print()
 		else:
 			print("La col·lecció ja és buida.")
 			pausar(nova_linia=True)
+
+	@Menu.eina("Esborrar col·lecció", 4)
+	def esborrar(self):
+		if Decisio("Segur que vols esborrar aquesta col·lecció?", False, "Esborrar", "Enrere", None)():
+			self.ref_coleccions.remove(self.coleccio)
+			self.ids.eliminar(self.coleccio.id)
+
+			print(f"Col·lecció amb ID #{self.coleccio.id} esborrada.")
+			print()
+			pausar()
+
+			self.sortir()
 
 	def mostrar(self):
 		assert self.coleccio is not None
