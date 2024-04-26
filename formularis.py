@@ -7,8 +7,12 @@ from text import Colors, Estils
 
 T = TypeVar('T')
 
+# article: False -> masculí, True -> femení, None -> sense article
 def quant(n: int, singular: str, plural: str) -> str:
 	return f"Cap {singular}" if n == 0 else (f"1 {singular}" if n == 1 else f"{n} {plural}")
+
+def quant_article(n: int, singular: str, plural: str, article: tuple[str, str]):
+	return f"{article[0]} {singular}" if n == 1 else (f"{article[1]} {n} {plural}")
 
 class Formulari(metaclass=ABCMeta):
 
@@ -34,10 +38,10 @@ def error(missatge):
 	print(Colors.error(missatge))
 
 
-def pausar(missatge="Prem enter per continuar...", nova_linia=False):
+def pausar(nova_linia=False):
 	if nova_linia:
 		print()
-	input(missatge + Colors.entrada)
+	input("Prem enter per continuar..."+ Colors.entrada)
 	Colors.reset()
 
 

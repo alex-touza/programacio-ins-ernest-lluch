@@ -1,260 +1,169 @@
-from formularis import Decisio, GrupFormularis, Nombre, Text, pausar, quant
+from bustia import Bustia, Paquet
+from formularis import Decisio, Text, pausar
+from id import UUID
 from menu import Menu
-from fitxer import Fitxer, Modes
-from text import Colors, Estils, catch
-from re import fullmatch
-from dataclasses import dataclass, asdict
+from string import ascii_uppercase
+from text import Colors
 
-@dataclass
-class Usuari:
-	nom: str
-	cognom1: str
-	cognom2: str
-	dni: str
-	edat: int
-
-	@property
-	def csv(self):
-		return ','.join([self.nom, self.cognom1, self.cognom2, self.dni, str(self.edat)])
-
-
-	@property
-	def data(self):
-		return asdict(self).items()
-
-	def mostrar(self, columnes):
-		for i, (k, v) in enumerate(self.data, 0):
-			print((columnes[i]).ljust(10), Colors.blau(v.rjust(25)))
 
 class MenuPrincipal(Menu):
-	def __init__(self, nom_fitxer: str):
-		self.fitxer = Fitxer(nom_fitxer, f"{nom_fitxer.lower()}.csv")
+	def __init__(self):
+		self.paquets_ids = UUID()
+		self.armari: list[Bustia] = [Bustia(id) for id in ascii_uppercase[:10]]
+		self.paquets: list[Paquet] = []
+		
 
-		self.columnes = {"Nom": 20, "Cognom 1": 20, "Cognom 2": 20, "DNI": 12, "Edat": 5}
+		super().__init__("ArmariGeddon")
 
-		self.dni_form = Text("DNI", lambda s, le: fullmatch(r'^[0-9]{8}[TRWAGMYFPDXBNJZSQVHLCKE]$', s) != None, buit=True)
-
-		super().__init__("Altura de dades")
-
-	def _llegir(self) -> list[list] | None:
-		csv = self.fitxer.csv_read()
-		if isinstance(csv, bool):
-			print(Colors.groc("El fitxer no existeix o està buit."))
-			pausar(nova_linia=True)
-			return None
-
-		return csv
-
-	def _escriure(self, s):
-		if catch(lambda: self.fitxer.read().iter_write([s]), "Error en escriure les dades."):
-			print(Colors.verd("S'han escrit les dades correctament."))
-
-	def _obtenir_usuari(self, csv: list[list]) -> tuple[Usuari, int] | None:
-		dni = self.dni_form()
-
-		usuari: Usuari | None = None
-		index: int = -1
-
-		for i, u_data in enumerate(csv):
-			u = Usuari(*u_data)
-
-			if dni == u.dni:
-				usuari = u
-				index = i
-				break
-
-		if usuari is None:
-			print(Colors.groc("No s'ha trobat l'usuari."))
-			return None
-		else:
-			print(Colors.verd("S'ha trobat l'usuari."))
-			return usuari, index
-
-	def _afegir_capcaleres(self):
-		print("Afegint capçaleres...")
-
-		if not catch(lambda: self.fitxer.write(','.join(self.columnes.keys())), "Error en afegir les capçaleres."):
-			pausar()
-			return
-
-		print(Colors.verd("Capçaleres afegides."))
-	
-	@Menu.menu(descr="L'administrador de dades amb el joc de paraules matemàtic més penós de la història.")
+	def _obtenir_bustia(self, id: str):
+		return [b for b in self.armari if b.id == id][0]
+		
+	@Menu.menu(descr="L'armari més astronòmicament eficient de l'univers.")
 	def __call__(self):
 		pass
 
-	@Menu.eina("Crear usuari", 1)
-	def crear_usuari(self):
-		dnis = []
-		if self.fitxer.exists():
-			csv = self.fitxer.csv_read()
-			if csv:
-				dnis = [u[list(self.columnes.keys()).index("DNI")] for u in csv]
-				
-		else:
-			print(Colors.groc("El fitxer no existeix. Es crearà 'dades.csv'."))
-			self._afegir_capcaleres()
+	@Menu.eina("Recollir un paquet", 1, cond=lambda self: len(self.paquets) > 0)
+	def recollir(self):
+		
+
+		if Decisio("Com vols cercar el teu paquet?", False, "Per bústia", "Per UUID del paquet", None)():
 			print()
-
-		usuari: None | Usuari = None
-
-		
-
-		while usuari is None:
+			
+			b: Bustia | None = None
 	
-			form = GrupFormularis({
-				"nom": Text("Nom", lambda s, le: le < 20, buit=True),
-				"cognom1": Text("Cognom 1", lambda s, le: le < 20, buit=True),
-				"cognom2": Text("Cognom 2 (pot ser buit)", lambda s, le: le < 20, buit=True),
-				"DNI": self.dni_form,
-				"Edat": Nombre("Edat", lambda n: 0 < n < 120, buit=True)
-			}, True, [2])()
-	
-			if form is None:
-				return
-	
-			usuari = Usuari(*form.values())
+			while b is None:
+				id = Text("ID de la bústia (A-J)", buit=True, default=None)()
+				if id is None: return
 
-			if usuari.dni in dnis:
-				print()
-				print(Colors.error("Error: Ja existeix un usuari amb aquest DNI"))
+				if id not in [b.id for b in self.armari]:
+					print(Colors.error(f"No s'ha trobat la bústia amb id #{id}"))
+					continue
 				
-				usuari = None
-
-				op = input("Prem enter per tornar a provar, 0 per acabar")
-
-				if op == "0":
-					return
-
-				print()
-
-		
-
-		
-
-		print()
-		self._escriure(usuari.csv)
-
-		pausar()
-		return
-
-	@Menu.eina("Consultar usuari", 2)
-	def consultar_usuari(self):
-		csv = self._llegir()
-		if not csv:
-			return
-
-		usuari: None | Usuari = None
-
-		while usuari is None:
-
-			dni = self.dni_form()
-
-			if dni == "":
-				return
-
-			for u_data in csv:
-				u = Usuari(*u_data)
-				if u.dni == dni:
-					usuari = u
+				b = self._obtenir_bustia(id)
+	
+				if b.paquet:
 					break
-
+					
+				print(Colors.error("La bústia no té cap paquet."))
+				b = None
+	
+			
 			print()
-			if usuari is None:
-				print(Colors.groc("No s'ha trobat l'usuari."))
+			print("Es recollirà el paquet:")
+			print(b.paquet)
+			if Decisio(None, refrescar=False, si="Confirmar", no="Enrere")():
+				p = b.recollirPaquet()
 				print()
-			else:
-				usuari.mostrar(list(self.columnes.keys()))
-
-		pausar(nova_linia=True)
-
-	@Menu.eina("Esborrar usuari", 3)
-	def esborrar_usuari(self):
-		csv = self._llegir()
-		if not csv:
-			return
-
-		usuari_ind: None | int = None
-		usuari: None | Usuari = None
-
-		while usuari_ind is None:
-
-			dni = self.dni_form()
+	
+				print("Contingut del paquet:")
+				print(p.contingut)
+				
+				print(Colors.verd("Paquet recollit satisfactòriament."))
+				pausar(True)
+		else:
 			print()
 
-			if dni == "":
-				return
+			p = None
 
-			new_csv = []
+			while p is None:
+				uuid = Text("Introdueix un UUID de paquet", buit=True, default=None)()
 
-			for i, u_data in enumerate(csv, 1):
-				u = Usuari(*u_data)
-				if u.dni == dni:
-					usuari_ind = i
-					usuari = u
-				else:
-					new_csv.append(u.csv)
+				if uuid is None: return
+
+				if uuid not in [p.uuid for p in self.paquets]:
+					print(Colors.error(f"No s'ha trobat el paquet amb UUID {uuid}"))
+
+				p = [p for p in self.paquets if p.uuid == uuid][0]
+
+
+				print()
+				print("Es recollirà el paquet:")
+				print(p)
+				if Decisio(None, refrescar=False, si="Confirmar", no="Enrere")():
+					p.recollir()
+					print()
+
+					print("Contingut del paquet:")
+					print(p.contingut)
+
+					print(Colors.verd("Paquet recollit satisfactòriament."))
+					pausar(True)
+
+
+			
 					
-			if usuari_ind is None:
-				print(Colors.groc("No s'ha trobat l'usuari."))
-				print()
-				
-			else:
-				assert usuari is not None
-				
-				print(Colors.verd("S'ha trobat l'usuari."))
-				print()
-				usuari.mostrar(list(self.columnes.keys()))
-
-				def esborrar():
-					self.fitxer.begin(Modes.Write)
-					self._afegir_capcaleres()
-					self.fitxer.end().read().begin(Modes.Write).iter_write(new_csv).end()
-					
-				print()
-				
-				if Decisio("Segur que el vols esborrar?", False, "Esborrar", "Enrere")() and catch(esborrar, "Error en escriure el fitxer."):
-					print(Colors.verd("S'ha escrit el fitxer correctament."))
-					pausar(nova_linia=True)
-
-				
 			
 
-	@Menu.eina("Consultar tots els usuaris", 4)
-	def consultar_tot(self):
-		csv = self._llegir()
-		if not csv:
-			return
-
-		csv = [[value.ljust(list(self.columnes.values())[i]) for i, value in enumerate(line)] for line in csv]
-
-		Estils.brillant()
+	@Menu.eina("Enviar un paquet", 2)
+	def enviar(self):
+		pid = self.paquets_ids()
+		print("UUID del paquet:", pid)
+		print()
 		
-		print(quant(len(csv), "usuari", "usuaris"))
+		cont = Text("Contingut del paquet", buit=True, default=None)()
+		if cont is None: return
+
+		p = Paquet(pid, cont)
+
+		b: Bustia | None = None
+
+		while b is None:
+			id = Text("ID de la bústia (A-J)", buit=True, default=None)()
+			if id is None: return
+
+			if id not in [b.id for b in self.armari]:
+				print(Colors.error(f"No s'ha trobat la bústia amb id #{id}"))
+				continue
+
+			b = self._obtenir_bustia(id)
+
+			if b.paquet:
+				print(Colors.error("La bústia ja té un paquet."))
+				b = None
+			else:
+				break
+		
 		print()
-
-		for title, width in self.columnes.items():
-			print(title.center(width),end="")
-
-		print()
-
-		Estils.reset()
-
-		for line in csv:
-			print(''.join(line))
-
-
-
-		pausar(nova_linia=True)
-
-	@Menu.eina("Reinicialitzar base de dades", 5)
-	def reinicialitzar(self):
-		if Decisio("Segur que vols esborrar totes les dades?", False, "Reinicialitzar", "Enrere", None)():
-				pass
+		print("S'enviarà el paquet:")
+		print(p)
+		print("-->",b)
+		if Decisio(None, refrescar=False, si="Confirmar", no="Enrere")():
 			
+			p.enviar(b)
+			
+			self.paquets.append(p)
+			print()
+			print(Colors.verd("Paquet enviat satisfactòriament."))
+			pausar(True)
+
+		
+	
+	@Menu.eina("Llistar bústies", 3)
+	def llistar_busties(self):
+		for b in self.armari:
+			print(b)
+
+		pausar(True)
+
+	@Menu.eina("Buidar la bústia", 4, cond=lambda self: len(self.paquets) > 0)
+	def buidar(self):
+		if Decisio(f"Segur que vols buidar la bústia?", False, "Buidar", "Enrere", f"Es recolliran els {len(self.paquets)} paquets." if len(self.paquets) > 1 else "Es recollirà el paquet.")():
+			paquets = [(b.id, b.recollirPaquet()) for b in self.armari if b.paquet]
+
+			print()
+			print("Paquets recollits:")
+			for p in paquets:
+				print(f"#{p[0]} --> {p[1]}")
+
+			pausar(True)
+
+			self.paquets = []
 
 
-m = MenuPrincipal("Dades")
+					
+
+
+m = MenuPrincipal()
 
 while m():
 	pass
