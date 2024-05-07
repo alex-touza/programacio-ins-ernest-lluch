@@ -31,13 +31,13 @@ def _input(missatge=""):
 
 
 def error(missatge):
-	print(Colors.error(missatge))
+	print(Colors.vermell(missatge))
 
 
-def pausar(missatge="Prem enter per continuar...", nova_linia=False):
+def pausar(nova_linia=False):
 	if nova_linia:
 		print()
-	input(missatge + Colors.entrada)
+	input("Prem enter per continuar..." + Colors.entrada)
 	Colors.reset()
 
 
@@ -117,7 +117,7 @@ class Opcio(Formulari):
 
 			return c
 		else:
-			print(Colors.error("Opció invàlida.\n"))
+			print(Colors.vermell("Opció invàlida.\n"))
 			# Tornar a escollir. Recursivitat, yay.
 			return self()
 

@@ -36,16 +36,16 @@ class Modificador:
 
 
 class Colors:
-	entrada = Modificador(Fore.YELLOW)
+	entrada = Modificador(Fore.YELLOW, Fore.RESET)
 
-	gris = Modificador(Fore.LIGHTBLACK_EX)
-	verd = Modificador(Fore.GREEN)
-	groc = Modificador(Fore.LIGHTYELLOW_EX)
-	blau = Modificador(Fore.BLUE)
+	gris = Modificador(Fore.LIGHTBLACK_EX, Fore.RESET)
+	verd = Modificador(Fore.GREEN, Fore.RESET)
+	groc = Modificador(Fore.LIGHTYELLOW_EX, Fore.RESET)
+	blau = Modificador(Fore.BLUE, Fore.RESET)
+	vermell = Modificador(Fore.RED, Fore.RESET)
+	magenta = Modificador(Fore.MAGENTA, Fore.RESET)
 
-	error = Modificador(Fore.RED)
-
-	reset = Modificador(Fore.RESET)
+	reset = Modificador(Fore.RESET, Fore.RESET)
 
 
 
@@ -63,7 +63,7 @@ def taula(dades: dict[str, Any]):
 
 def catch(func: Callable, error_message: str) -> bool:
 	def error(e):
-		Colors.error()
+		Colors.vermell()
 		print(error_message)
 		print(e)
 		Colors.reset()
