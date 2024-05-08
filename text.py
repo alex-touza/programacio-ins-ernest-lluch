@@ -44,6 +44,7 @@ class Colors:
 	blau = Modificador(Fore.BLUE, Fore.RESET)
 	vermell = Modificador(Fore.RED, Fore.RESET)
 	magenta = Modificador(Fore.MAGENTA, Fore.RESET)
+	cian = Modificador(Fore.LIGHTCYAN_EX, Fore.RESET)
 
 	reset = Modificador(Fore.RESET, Fore.RESET)
 

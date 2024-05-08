@@ -2,9 +2,8 @@ from __future__ import annotations
 from collections.abc import Iterable
 from io import TextIOWrapper
 from typing import Literal
-from typing_extensions import LiteralString
 from enum import Enum
-from os.path import isfile
+from os.path import isfile, getsize
 from os import remove
 
 from text import catch
@@ -17,6 +16,8 @@ class Modes(Enum):
 
 
 class Fitxer:
+	def __len__(self):
+		return self.get_size()
 
 	def __init__(self, title: str, path: str | None = None) -> None:
 		self.title = title
@@ -28,8 +29,14 @@ class Fitxer:
 		self.ends_with_newline = True
 
 	@property
-	def isOpen(self) -> bool:
+	def is_open(self) -> bool:
 		return self.obj is not None
+
+	def get_size(self) -> int:
+		return getsize(self.path) if isfile(self.path) else 0
+
+	def get_line_count(self, line_size: int) -> int:
+		return self.get_size() // line_size
 
 	def begin(self, _mode: Modes) -> Fitxer:
 		if self.mode == _mode:
@@ -106,7 +113,7 @@ class Fitxer:
 		else:
 			raise Exception
 
-	def read(self, line: int | None = None, force=False) -> Fitxer:
+	def read(self) -> Fitxer:
 		if self.mode is Modes.Read or self.obj is None and self.exists():
 			obj = open(self.path, Modes.Read.value) if self.obj is None else self.obj
 

@@ -91,7 +91,7 @@ class Opcio(Formulari):
 		if self.descr is not None:
 			print(self.descr)
 
-		Colors.blau()
+		# Colors.blau()
 
 		if self.mostrar:
 			if self.enrere is not None:
@@ -99,7 +99,7 @@ class Opcio(Formulari):
 			for i, opcio in enumerate(self.opcions.keys(), 1):
 				print(f"{i}. {opcio}")
 
-		Colors.reset()
+		# Colors.reset()
 
 		op = _input()
 		if self.enrere is not None and (op == "" or op == "0"):
