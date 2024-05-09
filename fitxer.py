@@ -2,7 +2,6 @@ from __future__ import annotations
 from collections.abc import Iterable
 from io import TextIOWrapper
 from typing import Literal
-from typing_extensions import LiteralString
 from enum import Enum
 from os.path import isfile
 from os import remove

@@ -209,7 +209,7 @@ class MenuPrincipal(Menu):
 				def esborrar():
 					self.fitxer.begin(Modes.Write)
 					self._afegir_capcaleres()
-					self.fitxer.end().read().begin(Modes.Write).iter_write(new_csv).end()
+					self.fitxer.end().read().begin(Modes.Append).iter_write(new_csv).end()
 					
 				print()
 				
