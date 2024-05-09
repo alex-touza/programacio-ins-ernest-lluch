@@ -16,8 +16,6 @@ class Llista:
 
 	class Vista:
 		"""Vista prèvia d'una llista que conté el nom i el nombre d'elements."""
-		nom: str
-		n: int
 
 		def __init__(self, ruta: str) -> None:
 			self.ruta = ruta

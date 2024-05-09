@@ -12,9 +12,9 @@ U = TypeVar('U')  # Tipus de la clau per mostrar les opcions. Pot ser un enum.
 class Menu(Generic[T, U]):
 
 	def __init__(self,
-							 titol: str | Callable[[T], str],
-							 arg: T | None = None,
-							 enrere: str | None = "Enrere"):
+	             titol: str | Callable[[T], str],
+	             arg: T | None = None,
+	             enrere: str | None = "Enrere"):
 		self._titol = titol
 		self.titol_arg = arg
 		self.enrere = enrere
@@ -36,7 +36,7 @@ class Menu(Generic[T, U]):
 
 	@staticmethod
 	def menu(clau: Callable | None = None,
-					 descr: str | Callable[..., str] | None = None):
+	         descr: str | Callable[..., str] | None = None):
 		"""
 		Mostra el menú amb les opcions que s'han configurat amb
 		els decoradors. Totes les funcions paramètriques tenen com a
@@ -87,8 +87,8 @@ class Menu(Generic[T, U]):
 
 				# Obtenir tots els mètodes de la classe i les posicions.
 				metodes = [
-						convertir(m) for m in self.__class__.__dict__.values()
-						if callable(m) and not getattr(m, 'amagada', False)
+					convertir(m) for m in self.__class__.__dict__.values()
+					if callable(m) and not getattr(m, 'amagada', False)
 				]
 
 				# Filtrar valors falsos
@@ -111,8 +111,8 @@ class Menu(Generic[T, U]):
 
 				# Obtenir mètodes marcats com a dinàmics
 				metodes = [
-						m for m in self.__class__.__dict__.values()
-						if getattr(m, 'dinamic', False)
+					m for m in self.__class__.__dict__.values()
+					if getattr(m, 'dinamic', False)
 				]
 
 				# Cridar les funcions per obtenir les eines dinàmiques
@@ -120,12 +120,12 @@ class Menu(Generic[T, U]):
 					op.update(e(self))
 
 				if Opcio(None,
-								 op,
-								 self, (descr(self) + '\n') if callable(descr) else
-								 ((descr + '\n') if descr is not None else None),
-								 refrescar=False,
-								 enrere=self.enrere,
-								 sep=None)() == 0:
+				         op,
+				         self, (descr(self) + '\n') if callable(descr) else
+				         ((descr + '\n') if descr is not None else None),
+				         refrescar=False,
+				         enrere=self.enrere,
+				         sep=None)() == 0:
 					return 0
 				else:
 					_sortir = self._sortir
@@ -138,12 +138,12 @@ class Menu(Generic[T, U]):
 
 	@staticmethod
 	def eina(nom: str | None,
-					 pos: int | tuple[int, ...],
-					 clau: U | tuple[U] | None = None,
-					 descr: str | None = None,
-					 func_clau: str | None = None,
-					 amagada: bool = False,
-					 cond: Callable[..., bool] | None = None):
+	         pos: int | tuple[int, ...],
+	         clau: U | tuple[U] | None = None,
+	         descr: str | None = None,
+	         func_clau: str | None = None,
+	         amagada: bool = False,
+	         cond: Callable[..., bool] | None = None):
 		"""
 		Decorador que determina que una funció és una eina que forma
 		part de l'administrador. Es mostrarà el títol amb el nom de
@@ -152,7 +152,7 @@ class Menu(Generic[T, U]):
 		"""
 
 		# La sintaxi dels decoradors amb arguments és innecessàriament i estúpidament
-		# complicada al python.
+		#  complicada al python.
 		# https://stackoverflow.com/questions/5929107/decorators-with-parameters
 
 		# Generar decorador
@@ -173,15 +173,15 @@ class Menu(Generic[T, U]):
 
 				return amb_params(self, nom, descr, func_clau, *args, **kwargs)
 
-				# self.eines[clau][nom] = lambda self: f(self, nom, descr, func)
+			# self.eines[clau][nom] = lambda self: f(self, nom, descr, func)
 
 			# Assegurar que clau i índex són els dos tuples o l'índex un nombre i la
 			# clau no una tupla.
 			assert type(clau) == type(pos) or (type(pos) == int
-																				 and type(pos) != tuple)
+			                                   and type(pos) != tuple)
 
-			# Afegir propietats a la pròpia funció per poder trobar-les
-			# més tard. Ignorar errors.
+			#  Afegir propietats a la pròpia funció per poder trobar-les
+			#  més tard. Ignorar errors.
 			wrapper.clau = clau
 			wrapper.nom = nom
 			wrapper.pos = pos
